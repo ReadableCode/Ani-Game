@@ -2,6 +2,7 @@
 # Running Imports #
 
 import os
+import random
 import time
 
 import pygame
@@ -27,17 +28,6 @@ FRAME_DIR = os.path.join(
     os.path.dirname(os.getcwd()), "data", "frames", current_datetime
 )
 
-
-# %%
-# Game #
-# %%
-# Running Imports #
-
-import os
-import random
-import time
-
-import pygame
 
 # %%
 # Variables #
@@ -66,6 +56,7 @@ FRAME_DIR = os.path.join(
 # Circle settings
 CIRCLE_CENTER = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
 CIRCLE_RADIUS = 200
+
 
 # %%
 # Functions #
