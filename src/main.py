@@ -74,7 +74,7 @@ pygame.display.set_caption("Ball in Circle")
 balls = []
 speeds = []
 ball, ball_speed_x, ball_speed_y = spawn_ball()
-balls.append(ball)
+balls.append((ball, False))
 speeds.append((ball_speed_x, ball_speed_y))
 
 # Create a clock object to control the frame rate
@@ -96,49 +96,58 @@ while running:
     new_balls = []
     new_speeds = []
 
-    for ball, (ball_speed_x, ball_speed_y) in zip(balls, speeds):
+    for (ball, has_escaped), (ball_speed_x, ball_speed_y) in zip(balls, speeds):
         # Move the ball
         ball.x += ball_speed_x
         ball.y += ball_speed_y
 
-        # Check for collision with the circle boundary
-        dist_x = ball.centerx - CIRCLE_CENTER[0]
-        dist_y = ball.centery - CIRCLE_CENTER[1]
-        distance = (dist_x**2 + dist_y**2) ** 0.5
+        if not has_escaped:
+            # Check for collision with the circle boundary
+            dist_x = ball.centerx - CIRCLE_CENTER[0]
+            dist_y = ball.centery - CIRCLE_CENTER[1]
+            distance = (dist_x**2 + dist_y**2) ** 0.5
 
-        if distance >= CIRCLE_RADIUS - ball.width / 2:
-            if (
-                abs(ball.centerx - SCREEN_WIDTH // 2) < HOLE_WIDTH // 2
-                and ball.centery < CIRCLE_CENTER[1]
-            ):
-                # Ball escapes through the hole
-                new_ball_1, speed_x_1, speed_y_1 = spawn_ball()
-                new_ball_2, speed_x_2, speed_y_2 = spawn_ball()
-                new_balls.extend([new_ball_1, new_ball_2])
-                new_speeds.extend([(speed_x_1, speed_y_1), (speed_x_2, speed_y_2)])
-                continue  # Skip adding the escaping ball to the new lists
-            else:
-                # Calculate the reflection
-                normal_x = dist_x / distance
-                normal_y = dist_y / distance
+            if distance >= CIRCLE_RADIUS - ball.width / 2:
+                if (
+                    abs(ball.centerx - SCREEN_WIDTH // 2) < HOLE_WIDTH // 2
+                    and ball.centery < CIRCLE_CENTER[1]
+                ):
+                    # Ball escapes through the hole
+                    new_ball_1, new_ball_speed_x_1, new_ball_speed_y_1 = spawn_ball()
+                    new_ball_2, new_ball_speed_x_2, new_ball_speed_y_2 = spawn_ball()
+                    new_balls.append((new_ball_1, False))
+                    new_speeds.append((new_ball_speed_x_1, new_ball_speed_y_1))
+                    new_balls.append((new_ball_2, False))
+                    new_speeds.append((new_ball_speed_x_2, new_ball_speed_y_2))
+                    has_escaped = True
+                else:
+                    # Calculate the reflection
+                    normal_x = dist_x / distance
+                    normal_y = dist_y / distance
 
-                dot_product = ball_speed_x * normal_x + ball_speed_y * normal_y
-                ball_speed_x -= 2 * dot_product * normal_x
-                ball_speed_y -= 2 * dot_product * normal_y
+                    dot_product = ball_speed_x * normal_x + ball_speed_y * normal_y
+                    ball_speed_x -= 2 * dot_product * normal_x
+                    ball_speed_y -= 2 * dot_product * normal_y
 
-        new_balls.append(ball)
+        new_balls.append((ball, has_escaped))
         new_speeds.append((ball_speed_x, ball_speed_y))
 
     # Remove balls that are off the screen
     balls = [
-        ball
-        for ball in new_balls
-        if 0 <= ball.x <= SCREEN_WIDTH and 0 <= ball.y <= SCREEN_HEIGHT
+        ball_info
+        for ball_info in new_balls
+        if ball_info[0].right >= 0
+        and ball_info[0].left <= SCREEN_WIDTH
+        and ball_info[0].bottom >= 0
+        and ball_info[0].top <= SCREEN_HEIGHT
     ]
     speeds = [
         speed
-        for ball, speed in zip(new_balls, new_speeds)
-        if 0 <= ball.x <= SCREEN_WIDTH and 0 <= ball.y <= SCREEN_HEIGHT
+        for ball_info, speed in zip(new_balls, new_speeds)
+        if ball_info[0].right >= 0
+        and ball_info[0].left <= SCREEN_WIDTH
+        and ball_info[0].bottom >= 0
+        and ball_info[0].top <= SCREEN_HEIGHT
     ]
 
     # Drawing everything on the screen
@@ -155,7 +164,7 @@ while running:
         ),
     )
 
-    for ball in balls:
+    for ball, _ in balls:
         pygame.draw.ellipse(screen, RED, ball)
 
     if SAVE_FRAMES:
@@ -170,3 +179,6 @@ while running:
     clock.tick(60)  # Frame rate in frames per second
 
 pygame.quit()
+
+
+# %%
