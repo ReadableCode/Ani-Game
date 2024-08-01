@@ -111,8 +111,12 @@ while running:
                 abs(ball.centerx - SCREEN_WIDTH // 2) < HOLE_WIDTH // 2
                 and ball.centery < CIRCLE_CENTER[1]
             ):
-                # Ball escapes through the hole, let it continue its path
-                pass  # Let it continue its path without bouncing
+                # Ball escapes through the hole
+                new_ball_1, speed_x_1, speed_y_1 = spawn_ball()
+                new_ball_2, speed_x_2, speed_y_2 = spawn_ball()
+                new_balls.extend([new_ball_1, new_ball_2])
+                new_speeds.extend([(speed_x_1, speed_y_1), (speed_x_2, speed_y_2)])
+                continue  # Skip adding the escaping ball to the new lists
             else:
                 # Calculate the reflection
                 normal_x = dist_x / distance
