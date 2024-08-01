@@ -10,28 +10,6 @@ import pygame
 # %%
 # Variables #
 
-# Screen dimensions
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
-# Game settings
-BALL_SPEED = 5
-PADDLE_SPEED = 10
-
-# frame dir is PARENT dir/data/frames/current datetime/
-current_datetime = time.strftime("%Y%m%d-%H%M%S")
-FRAME_DIR = os.path.join(
-    os.path.dirname(os.getcwd()), "data", "frames", current_datetime
-)
-
-
-# %%
-# Variables #
-
 SAVE_FRAMES = False
 
 # Screen dimensions
@@ -56,7 +34,6 @@ FRAME_DIR = os.path.join(
 # Circle settings
 CIRCLE_CENTER = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
 CIRCLE_RADIUS = 200
-
 
 # %%
 # Functions #
@@ -130,30 +107,35 @@ while running:
         distance = (dist_x**2 + dist_y**2) ** 0.5
 
         if distance >= CIRCLE_RADIUS - ball.width / 2:
-            # Calculate the reflection
-            normal_x = dist_x / distance
-            normal_y = dist_y / distance
-
-            dot_product = ball_speed_x * normal_x + ball_speed_y * normal_y
-            ball_speed_x -= 2 * dot_product * normal_x
-            ball_speed_y -= 2 * dot_product * normal_y
-
             if (
                 abs(ball.centerx - SCREEN_WIDTH // 2) < HOLE_WIDTH // 2
                 and ball.centery < CIRCLE_CENTER[1]
             ):
-                # Ball escaped through the hole
-                new_ball_1, speed_x_1, speed_y_1 = spawn_ball()
-                new_ball_2, speed_x_2, speed_y_2 = spawn_ball()
-                new_balls.extend([new_ball_1, new_ball_2])
-                new_speeds.extend([(speed_x_1, speed_y_1), (speed_x_2, speed_y_2)])
-                continue
+                # Ball escapes through the hole, let it continue its path
+                pass  # Let it continue its path without bouncing
+            else:
+                # Calculate the reflection
+                normal_x = dist_x / distance
+                normal_y = dist_y / distance
+
+                dot_product = ball_speed_x * normal_x + ball_speed_y * normal_y
+                ball_speed_x -= 2 * dot_product * normal_x
+                ball_speed_y -= 2 * dot_product * normal_y
 
         new_balls.append(ball)
         new_speeds.append((ball_speed_x, ball_speed_y))
 
-    balls = new_balls
-    speeds = new_speeds
+    # Remove balls that are off the screen
+    balls = [
+        ball
+        for ball in new_balls
+        if 0 <= ball.x <= SCREEN_WIDTH and 0 <= ball.y <= SCREEN_HEIGHT
+    ]
+    speeds = [
+        speed
+        for ball, speed in zip(new_balls, new_speeds)
+        if 0 <= ball.x <= SCREEN_WIDTH and 0 <= ball.y <= SCREEN_HEIGHT
+    ]
 
     # Drawing everything on the screen
     screen.fill(BLACK)
@@ -184,5 +166,3 @@ while running:
     clock.tick(60)  # Frame rate in frames per second
 
 pygame.quit()
-
-# %%
