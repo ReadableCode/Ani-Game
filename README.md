@@ -1,5 +1,7 @@
 # Ani-Game
 
+- Ani-Game is intended to automate the creation of small geometric shapes in a game-like environment being turned into a video for platforms like tiktok.
+
 ## Setting Up
 
 ### Using Pipenv
